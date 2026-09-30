@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WINTER ARC 9 | Daily Progress</title>
-    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 
@@ -12,6 +12,10 @@
     <header>
         <h1>WINTER ARC 2026</h1>
         <div class="subtitle" id="date-subtitle">Stored on this device</div>
+        <div class="streak-counter" aria-live="polite">
+            <span id="main-streak">🔥 Main: 0 days</span>
+            <span id="consistency-streak">⚡ Consistency: 0 days</span>
+        </div>
     </header>
 
     <section class="status-card">
@@ -47,8 +51,15 @@
             <span class="auto-value">9:30 PM - 5:00 AM (7.5 hrs)</span>
         </div>
         <div class="auto-item">
-            <span class="auto-label">Money Spent Today</span>
-            <input type="text" id="money-spent" class="money-input" placeholder="e.g. 0rs" oninput="autoSave()">
+            <span class="auto-label">Budget Today (INR)</span>
+            <div class="budget-fields">
+                <label class="budget-category">Food<input type="number" id="budget-food" min="0" step="0.01" value="0" oninput="autoSave()"></label>
+                <label class="budget-category">Study<input type="number" id="budget-study" min="0" step="0.01" value="0" oninput="autoSave()"></label>
+                <label class="budget-category">Transport<input type="number" id="budget-transport" min="0" step="0.01" value="0" oninput="autoSave()"></label>
+                <label class="budget-category">Fun<input type="number" id="budget-fun" min="0" step="0.01" value="0" oninput="autoSave()"></label>
+                <label class="budget-category">Other<input type="number" id="budget-other" min="0" step="0.01" value="0" oninput="autoSave()"></label>
+            </div>
+            <span class="budget-total" id="budget-total">Total: ₹0</span>
         </div>
     </section>
 
@@ -83,23 +94,28 @@
 
         <div class="objective-item" id="item-3"><div class="objective-info"><span class="item-title">4. DSA Problems</span></div><input type="number" id="num-dsa" class="num-input" min="0" value="0" oninput="autoSave()"></div>
         <div class="objective-item" id="item-4"><div class="objective-info"><span class="item-title">5. GitHub Commit</span></div><input type="checkbox" id="check-4" onchange="autoSave()"></div>
-        <div class="objective-item" id="item-5"><div class="objective-info"><span class="item-title">6. Water 3L Tracker</span></div><input type="checkbox" id="check-5" onchange="autoSave()"></div>
+        <div class="objective-item" id="item-5">
+            <div class="objective-info"><span class="item-title">6. Water 3L Tracker</span><span class="item-desc" id="water-count">0 / 8 cups</span></div>
+            <div class="water-controls">
+                <button class="timer-btn" type="button" onclick="adjustWater(-1)" aria-label="Remove one glass of water">−</button>
+                <button class="timer-btn" type="button" onclick="adjustWater(1)" aria-label="Add one glass of water">+</button>
+                <input type="checkbox" id="check-5" hidden>
+            </div>
+        </div>
         <div class="objective-item" id="item-6"><div class="objective-info"><span class="item-title">7. No Scroll</span></div><input type="checkbox" id="check-6" onchange="autoSave()"></div>
         <div class="objective-item" id="item-7"><div class="objective-info"><span class="item-title">8. Mobile Stop</span></div><input type="checkbox" id="check-7" onchange="autoSave()"></div>
         <div class="objective-item" id="item-8" style="flex-direction: column; align-items: stretch; gap: 8px;">
             <div class="objective-info">
                 <span class="item-title">9. Win of the Day</span>
-                <label class="item-desc" for="win-input">Minimum 100 words</label>
+                <label class="item-desc" for="win-input">Minimum 20 words</label>
             </div>
             <textarea id="win-input" class="text-input" rows="5" aria-describedby="win-word-count" placeholder="What did you do well today?" oninput="autoSave()"></textarea>
-            <span class="item-desc" id="win-word-count" aria-live="polite">0 / 100 words</span>
+            <span class="item-desc" id="win-word-count" aria-live="polite">0 / 20 words</span>
             <input type="checkbox" id="check-8" style="display:none;">
         </div>
     </section>
 
-    <button class="submit-cloud-btn" id="submit-btn" onclick="submitTodayProgress()">Save today's progress</button>
-
-    <footer>Progress is stored in this browser · New day starts at midnight Nepal time</footer>
+    <footer>Progress saves automatically in this browser · New day starts at midnight Nepal time</footer>
 </div>
 
 <div id="calendar-modal" class="modal-overlay" style="display:none;" onclick="closeCalendarOnBackdrop(event)">
@@ -130,6 +146,6 @@
     </div>
 </div>
 
-<script src="script.js?v=11"></script>
+<script src="script.js?v=13"></script>
 </body>
 </html>

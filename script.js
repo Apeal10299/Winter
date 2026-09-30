@@ -1,6 +1,8 @@
 const todayDate = getNepalDateString(new Date());
 const STORAGE_PREFIX = 'winter-arc-progress-';
-const MIN_WIN_WORDS = 100;
+const MIN_WIN_WORDS = 20;
+const WATER_GOAL_CUPS = 8;
+const BUDGET_CATEGORIES = ['food', 'study', 'transport', 'fun', 'other'];
 document.getElementById('date-subtitle').innerText = `Stored on this device: ${todayDate}`;
 const objectiveNames = Array.from(document.querySelectorAll('.item-title')).map(item => item.textContent.trim());
 
@@ -35,27 +37,35 @@ function scheduleNepalMidnightRefresh() {
 // Timer Variables
 let totalSeconds = 105 * 60; // 1h 45m (105 minutes)
 let deepWorkSeconds = 0;
+let waterCups = 0;
 let timerInterval = null;
 let isRunning = false;
-let submitResetTimer = null;
 
 async function loadLocalProgress() {
     const localData = readLocalProgress(todayDate);
     if (localData) applyProgress(localData);
-    restorePendingProgressReset();
     restoreTimerState();
+    updateStreak();
 }
 
 function applyProgress(data) {
     const checksArr = data.checks ? data.checks.split(',').map(value => value === 'true') : Array(9).fill(false);
-    [0, 1, 2, 4, 5, 6, 7].forEach(index => {
+    [0, 1, 2, 4, 6, 7].forEach(index => {
         document.getElementById(`check-${index}`).checked = !!checksArr[index];
     });
+    waterCups = Math.max(0, Math.min(WATER_GOAL_CUPS, Number(data.water_cups) || (checksArr[5] ? WATER_GOAL_CUPS : 0)));
+    document.getElementById('check-5').checked = waterCups >= WATER_GOAL_CUPS;
+    BUDGET_CATEGORIES.forEach(category => {
+        const amount = Number(data.budget_categories?.[category]);
+        const legacyAmount = category === 'other' && !data.budget_categories ? parseMoneyAmount(data.money) : 0;
+        document.getElementById(`budget-${category}`).value = Number.isFinite(amount) ? amount : legacyAmount;
+    });
     document.getElementById('num-dsa').value = data.dsa || 0;
-    document.getElementById('money-spent').value = data.money || '';
     document.getElementById('win-input').value = data.win || '';
     deepWorkSeconds = Math.max(0, Number(data.deep_work_seconds) || 0);
     document.getElementById('check-8').checked = countWords(data.win || '') >= MIN_WIN_WORDS;
+    renderWaterCount();
+    renderBudgetTotal();
     renderDeepWorkLogged();
     updateUI();
 }
@@ -73,14 +83,8 @@ function writeLocalProgress(data) {
         const date = data.date || todayDate;
         const existing = readLocalProgress(date);
         const archive = Number(data.submitted) === 1
-            ? { checks: data.checks, dsa: data.dsa, money: data.money, win: data.win, deep_work_seconds: data.deep_work_seconds }
-            : existing?.archive || (Number(data.snapshot_submitted) === 1 ? {
-                checks: data.snapshot_checks,
-                dsa: data.snapshot_dsa,
-                money: data.snapshot_money,
-                win: data.snapshot_win,
-                deep_work_seconds: data.snapshot_deep_work_seconds
-            } : null);
+            ? { checks: data.checks, dsa: data.dsa, money: data.money, budget_categories: data.budget_categories, water_cups: data.water_cups, win: data.win, deep_work_seconds: data.deep_work_seconds }
+            : null;
         localStorage.setItem(`${STORAGE_PREFIX}${date}`, JSON.stringify({ ...data, date, archive }));
     } catch (err) {
         console.error('Unable to save progress on this device:', err);
@@ -180,12 +184,19 @@ async function saveProgressLocally(submitted = 0) {
     const winPassed = countWords(winText) >= MIN_WIN_WORDS;
     document.getElementById('check-8').checked = winPassed;
 
+    const budgetCategories = Object.fromEntries(BUDGET_CATEGORIES.map(category => [
+        category,
+        Math.max(0, Number(document.getElementById(`budget-${category}`).value) || 0)
+    ]));
+    const totalBudget = Object.values(budgetCategories).reduce((total, amount) => total + amount, 0);
     let checksArr = [];
     for (let i = 0; i < 9; i++) {
         if (i === 3) {
             checksArr.push(dsaVal >= 2);
         } else if (i === 8) {
             checksArr.push(winPassed);
+        } else if (i === 5) {
+            checksArr.push(waterCups >= WATER_GOAL_CUPS);
         } else {
             checksArr.push(document.getElementById('check-' + i).checked);
         }
@@ -195,7 +206,9 @@ async function saveProgressLocally(submitted = 0) {
         date: todayDate,
         checks: checksArr.join(','),
         dsa: dsaVal,
-        money: document.getElementById('money-spent').value,
+        money: String(totalBudget),
+        budget_categories: budgetCategories,
+        water_cups: waterCups,
         win: winText,
         deep_work_seconds: deepWorkSeconds,
         submitted
@@ -205,6 +218,8 @@ async function saveProgressLocally(submitted = 0) {
     writeLocalProgress(payload);
 
     document.getElementById('date-subtitle').innerText = `Stored on this device: ${todayDate}`;
+    renderBudgetTotal(totalBudget);
+    updateStreak();
     if (document.getElementById('calendar-modal').style.display === 'flex') await renderCalendar();
     return true;
 }
@@ -213,38 +228,8 @@ function autoSave() {
     saveProgressLocally();
 }
 
-async function submitTodayProgress() {
-    const resetAt = Date.now() + 50000;
-    try {
-        localStorage.setItem(`${STORAGE_PREFIX}reset-at-${todayDate}`, String(resetAt));
-    } catch (err) {
-        console.error('Unable to persist the reset timer:', err);
-    }
-    scheduleProgressReset(50000);
-
-    const saved = await saveProgressLocally(1);
-    const button = document.getElementById('submit-btn');
-    button.innerText = saved ? 'Saved for today' : 'Save failed';
-}
-
-function scheduleProgressReset(delay) {
-    if (submitResetTimer) window.clearTimeout(submitResetTimer);
-    submitResetTimer = window.setTimeout(resetTodayProgress, delay);
-}
-
-function restorePendingProgressReset() {
-    try {
-        const key = `${STORAGE_PREFIX}reset-at-${todayDate}`;
-        const resetAt = Number(localStorage.getItem(key));
-        if (resetAt) scheduleProgressReset(Math.max(0, resetAt - Date.now()));
-    } catch (err) {
-        console.error('Unable to restore the reset timer:', err);
-    }
-}
-
 function restoreTimerState() {
     try {
-        if (localStorage.getItem(`${STORAGE_PREFIX}reset-at-${todayDate}`)) return;
         const savedState = JSON.parse(localStorage.getItem(`${STORAGE_PREFIX}timer-${todayDate}`));
         if (!savedState || !Number.isFinite(Number(savedState.remainingSeconds))) return;
 
@@ -264,34 +249,6 @@ function restoreTimerState() {
     }
 }
 
-async function resetTodayProgress() {
-    try {
-        localStorage.removeItem(`${STORAGE_PREFIX}reset-at-${todayDate}`);
-        localStorage.removeItem(`${STORAGE_PREFIX}timer-${todayDate}`);
-    } catch (err) {
-        console.error('Unable to clear the reset timer:', err);
-    }
-    clearInterval(timerInterval);
-    timerInterval = null;
-    isRunning = false;
-    totalSeconds = 105 * 60;
-    deepWorkSeconds = 0;
-    document.getElementById('timer-main-btn').innerText = 'Start';
-    renderTimerDisplay();
-    renderDeepWorkLogged();
-    for (let index = 0; index < 9; index++) {
-        const checkbox = document.getElementById(`check-${index}`);
-        if (checkbox) checkbox.checked = false;
-    }
-    document.getElementById('num-dsa').value = 0;
-    document.getElementById('money-spent').value = '';
-    document.getElementById('win-input').value = '';
-    updateUI();
-    await saveProgressLocally();
-    document.getElementById('submit-btn').innerText = 'Save today\'s progress';
-    submitResetTimer = null;
-}
-
 function updateUI() {
     let completedCount = 0;
     const dsaVal = parseInt(document.getElementById('num-dsa').value) || 0;
@@ -305,6 +262,7 @@ function updateUI() {
         let isPassed = false;
         if (i === 3) isPassed = dsaVal >= 2;
         else if (i === 8) isPassed = winPassed;
+        else if (i === 5) isPassed = waterCups >= WATER_GOAL_CUPS;
         else isPassed = document.getElementById('check-' + i).checked;
 
         const row = document.getElementById('item-' + i);
@@ -414,6 +372,49 @@ function countCompleted(data) {
         if (index === 8) return total + (winPassed ? 1 : 0);
         return total + (passed ? 1 : 0);
     }, 0);
+}
+
+function parseMoneyAmount(value) {
+    const match = String(value ?? '').replaceAll(',', '').match(/-?\d+(?:\.\d+)?/);
+    return match ? Math.max(0, Number(match[0]) || 0) : 0;
+}
+
+function renderBudgetTotal(total = BUDGET_CATEGORIES.reduce((sum, category) => {
+    return sum + (Number(document.getElementById(`budget-${category}`).value) || 0);
+}, 0)) {
+    document.getElementById('budget-total').textContent = `Total: ₹${total.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+}
+
+function renderWaterCount() {
+    document.getElementById('water-count').textContent = `${waterCups} / ${WATER_GOAL_CUPS} cups`;
+}
+
+function adjustWater(amount) {
+    waterCups = Math.max(0, Math.min(WATER_GOAL_CUPS, waterCups + amount));
+    document.getElementById('check-5').checked = waterCups >= WATER_GOAL_CUPS;
+    renderWaterCount();
+    autoSave();
+}
+
+function calculateStreak(minimumScore) {
+    const startDate = new Date(`${todayDate}T00:00:00Z`);
+    if (countCompleted(readLocalProgress(todayDate) || {}) < minimumScore) startDate.setUTCDate(startDate.getUTCDate() - 1);
+    let streak = 0;
+    for (let offset = 0; offset < 3660; offset++) {
+        const date = new Date(startDate);
+        date.setUTCDate(startDate.getUTCDate() - offset);
+        const key = date.toISOString().slice(0, 10);
+        if (countCompleted(readLocalProgress(key) || {}) < minimumScore) break;
+        streak++;
+    }
+    return streak;
+}
+
+function updateStreak() {
+    const mainStreak = calculateStreak(9);
+    const consistencyStreak = calculateStreak(6);
+    document.getElementById('main-streak').textContent = `🔥 Main: ${mainStreak} ${mainStreak === 1 ? 'day' : 'days'}`;
+    document.getElementById('consistency-streak').textContent = `⚡ Consistency: ${consistencyStreak} ${consistencyStreak === 1 ? 'day' : 'days'}`;
 }
 
 function closeModal() {

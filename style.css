@@ -59,6 +59,17 @@ h1 {
     text-transform: uppercase; 
 }
 
+.streak-counter {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 20px;
+    color: var(--accent-amber);
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
 .status-card, .auto-panel, .objective-item { 
     border: 1px solid var(--border); 
     background-color: var(--card-bg); 
@@ -238,6 +249,37 @@ h1 {
     flex-direction: column; 
     gap: 5px; 
 }
+
+.budget-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.budget-category {
+    display: grid;
+    gap: 3px;
+    color: var(--text-secondary);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+}
+
+.budget-category input {
+    width: 100%;
+    min-width: 0;
+    padding: 5px 6px;
+    border: 1px solid var(--border);
+    background: var(--bg-main);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 0.75rem;
+}
+
+.budget-category input:focus { outline: 1px solid var(--accent-cyan); }
+.budget-total { color: var(--accent-cyan); font-size: 0.75rem; font-weight: bold; }
+
+.water-controls { display: flex; align-items: center; gap: 8px; }
+.water-controls .timer-btn { width: 38px; height: 36px; font-size: 1rem; }
 
 .auto-label { 
     font-size: 0.75rem; 
@@ -477,6 +519,20 @@ input[type="checkbox"]:checked::after {
 .admin-stat span { display: block; color: var(--text-secondary); font-size: 0.7rem; text-transform: uppercase; }
 .admin-stat strong { display: block; margin-top: 7px; color: var(--accent-cyan); font-size: 1.35rem; }
 
+.admin-insights { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.admin-chart-panel { min-width: 0; padding: 16px; border: 1px solid var(--border); background: var(--card-bg); }
+.admin-chart-panel h3 { margin-bottom: 16px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; }
+.budget-chart-layout { display: flex; align-items: center; justify-content: center; gap: 20px; min-height: 154px; }
+.budget-pie { width: 142px; height: 142px; flex: 0 0 142px; border: 1px solid var(--border); border-radius: 50%; }
+.budget-legend { display: grid; gap: 8px; color: var(--text-secondary); font-size: 0.7rem; }
+.budget-legend-item { display: flex; align-items: center; gap: 7px; }
+.budget-swatch { width: 10px; height: 10px; flex: 0 0 10px; }
+.score-chart { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: end; gap: 8px; height: 154px; }
+.score-column { display: grid; grid-template-rows: 16px 1fr 16px; justify-items: center; gap: 4px; height: 100%; min-width: 0; }
+.score-value, .score-date { color: var(--text-secondary); font-size: 0.62rem; }
+.score-track { display: flex; align-items: end; width: min(100%, 28px); height: 100%; background: var(--bg-main); border: 1px solid var(--border); }
+.score-bar { width: 100%; min-height: 0; background: var(--accent-cyan); }
+
 .admin-table-wrap { overflow-x: auto; border: 1px solid var(--border); background: var(--card-bg); }
 .admin-table { width: 100%; border-collapse: collapse; min-width: 860px; font-size: 0.78rem; }
 .admin-table th, .admin-table td { padding: 11px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
@@ -503,6 +559,8 @@ input[type="checkbox"]:checked::after {
 }
 
 @media (max-width: 600px) {
+    .auto-panel { grid-template-columns: 1fr; }
+
     .admin-topbar {
         align-items: stretch;
         flex-direction: column;
@@ -514,6 +572,9 @@ input[type="checkbox"]:checked::after {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    .admin-insights { grid-template-columns: 1fr; }
+    .budget-chart-layout { justify-content: space-evenly; gap: 12px; }
 
     .calendar-filter-group button {
         grid-column: 1 / -1;

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WINTER ARC 9 | Admin</title>
-    <link rel="stylesheet" href="../style.css?v=9">
+    <link rel="stylesheet" href="../style.css?v=10">
 </head>
 <body>
 <main class="admin-container">
@@ -45,6 +45,20 @@
             <div class="admin-stat"><span>Deep work logged</span><strong id="stat-deep-work">--</strong></div>
         </section>
 
+        <section class="admin-insights" aria-label="Spending and progress charts">
+            <article class="admin-chart-panel">
+                <h3>Spending by category</h3>
+                <div class="budget-chart-layout">
+                    <div id="budget-pie" class="budget-pie" role="img" aria-label="No spending recorded"></div>
+                    <div id="budget-legend" class="budget-legend"></div>
+                </div>
+            </article>
+            <article class="admin-chart-panel">
+                <h3>Last 7 days score</h3>
+                <div id="score-chart" class="score-chart" role="img" aria-label="Daily completion scores for the last seven days"></div>
+            </article>
+        </section>
+
         <section class="admin-filters" aria-label="Filter records">
             <div class="calendar-filter-group">
                 <input id="month-filter" type="month" aria-label="Filter by month">
@@ -72,6 +86,6 @@
         </div>
     </div>
 </main>
-<script src="admin.js?v=8"></script>
+<script src="admin.js?v=9"></script>
 </body>
 </html>

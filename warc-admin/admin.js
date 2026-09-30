@@ -1,6 +1,8 @@
 const ADMIN_PASSWORD = 'admin123';
 const STORAGE_PREFIX = 'winter-arc-progress-';
-const MIN_WIN_WORDS = 100;
+const MIN_WIN_WORDS = 20;
+const BUDGET_CATEGORIES = ['Food', 'Study', 'Transport', 'Fun', 'Other'];
+const BUDGET_COLORS = ['#00e676', '#00c8ff', '#ffbf00', '#ff4757', '#a0a0b0'];
 const objectiveNames = [
     '5:00 AM Wakeup',
     'Workout',
@@ -46,6 +48,7 @@ function loadRecords() {
             .filter(Boolean)
             .sort((first, second) => second.date.localeCompare(first.date));
         updateSummary();
+        renderInsights();
         renderRecords();
         status.textContent = `Local browser records · Updated ${new Date().toLocaleString()}`;
     } catch (error) {
@@ -77,6 +80,105 @@ function updateSummary() {
     updateMonthlySpend();
 }
 
+function getKathmanduDate() {
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Kathmandu', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(new Date());
+    const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}`;
+}
+
+function getDateFilteredRecords() {
+    const month = document.getElementById('month-filter').value;
+    const dateFrom = document.getElementById('date-from').value;
+    const dateTo = document.getElementById('date-to').value;
+    return allRecords.filter(record => {
+        const date = String(record.date || '');
+        return (!month || date.startsWith(month))
+            && (month || !dateFrom || date >= dateFrom)
+            && (month || !dateTo || date <= dateTo);
+    });
+}
+
+function renderInsights() {
+    renderBudgetPie();
+    renderScoreChart();
+}
+
+function renderBudgetPie() {
+    const totals = Object.fromEntries(BUDGET_CATEGORIES.map(category => [category, 0]));
+    getDateFilteredRecords().forEach(record => {
+        if (record.budget_categories && typeof record.budget_categories === 'object') {
+            BUDGET_CATEGORIES.forEach(category => {
+                totals[category] += Math.max(0, Number(record.budget_categories[category.toLowerCase()]) || 0);
+            });
+        } else {
+            totals.Other += parseMoneyAmount(record.money) ?? 0;
+        }
+    });
+
+    const total = Object.values(totals).reduce((sum, amount) => sum + amount, 0);
+    const pie = document.getElementById('budget-pie');
+    const legend = document.getElementById('budget-legend');
+    legend.replaceChildren();
+    if (!total) {
+        pie.style.background = 'var(--border)';
+        pie.setAttribute('aria-label', 'No spending recorded in the selected dates');
+    } else {
+        let angle = 0;
+        const slices = BUDGET_CATEGORIES.map((category, index) => {
+            const nextAngle = angle + totals[category] / total * 360;
+            const slice = `${BUDGET_COLORS[index]} ${angle}deg ${nextAngle}deg`;
+            angle = nextAngle;
+            return slice;
+        });
+        pie.style.background = `conic-gradient(${slices.join(', ')})`;
+        pie.setAttribute('aria-label', `Spending total ₹${total.toLocaleString('en-IN')}`);
+    }
+    BUDGET_CATEGORIES.forEach((category, index) => {
+        const item = document.createElement('div');
+        item.className = 'budget-legend-item';
+        const swatch = document.createElement('i');
+        swatch.className = 'budget-swatch';
+        swatch.style.backgroundColor = BUDGET_COLORS[index];
+        const label = document.createElement('span');
+        label.textContent = `${category}: ₹${totals[category].toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+        item.append(swatch, label);
+        legend.append(item);
+    });
+}
+
+function renderScoreChart() {
+    const chart = document.getElementById('score-chart');
+    const date = new Date(`${getKathmanduDate()}T00:00:00Z`);
+    const recordsByDate = new Map(allRecords.map(record => [record.date, record]));
+    chart.replaceChildren();
+    for (let offset = 6; offset >= 0; offset--) {
+        const day = new Date(date);
+        day.setUTCDate(date.getUTCDate() - offset);
+        const key = day.toISOString().slice(0, 10);
+        const score = completedCount(recordsByDate.get(key) || {});
+        const column = document.createElement('div');
+        column.className = 'score-column';
+        column.title = `${key}: ${score}/9`;
+        column.setAttribute('aria-label', `${key}: ${score} of 9`);
+        const value = document.createElement('span');
+        value.className = 'score-value';
+        value.textContent = String(score);
+        const track = document.createElement('div');
+        track.className = 'score-track';
+        const bar = document.createElement('div');
+        bar.className = 'score-bar';
+        bar.style.height = `${score / 9 * 100}%`;
+        track.append(bar);
+        const label = document.createElement('span');
+        label.className = 'score-date';
+        label.textContent = key.slice(5);
+        column.append(value, track, label);
+        chart.append(column);
+    }
+}
+
 function formatDuration(seconds) {
     const totalSeconds = Math.max(0, Number(seconds) || 0);
     if (totalSeconds < 60) return `${Math.floor(totalSeconds)}s`;
@@ -97,13 +199,7 @@ function updateMonthlySpend() {
     const month = document.getElementById('month-filter').value;
     const dateFrom = document.getElementById('date-from').value;
     const dateTo = document.getElementById('date-to').value;
-    const total = allRecords.reduce((sum, record) => {
-        const date = String(record.date || '');
-        if (month && !date.startsWith(month)) return sum;
-        if (!month && dateFrom && date < dateFrom) return sum;
-        if (!month && dateTo && date > dateTo) return sum;
-        return sum + (parseMoneyAmount(record.money) ?? 0);
-    }, 0);
+    const total = getDateFilteredRecords().reduce((sum, record) => sum + (parseMoneyAmount(record.money) ?? 0), 0);
     const label = month ? `Spend in ${month}`
         : dateFrom || dateTo ? 'Spend in selected dates' : 'Spend all time';
     document.getElementById('stat-spend-label').textContent = label;
@@ -258,11 +354,13 @@ document.getElementById('month-filter').addEventListener('change', () => {
     document.getElementById('date-from').value = '';
     document.getElementById('date-to').value = '';
     updateMonthlySpend();
+    renderBudgetPie();
     renderRecords();
 });
 const handleDateRangeChange = () => {
     syncMonthToDateRange();
     updateMonthlySpend();
+    renderBudgetPie();
     renderRecords();
 };
 document.getElementById('date-from').addEventListener('change', handleDateRangeChange);
