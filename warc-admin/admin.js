@@ -121,25 +121,28 @@ function renderRecords() {
 
     filtered.forEach(record => {
         const row = document.createElement('tr');
+        row.className = 'record-main-row';
         const submitted = Number(record.submitted) === 1;
         const count = completedCount(record);
         const values = [
-            { text: record.date || 'Unknown', className: 'record-date' },
-            { text: `${count} / 9` },
-            { text: String(Number(record.dsa) || 0) },
-            { text: formatDuration(record.deep_work_seconds) },
-            { text: record.money || '-' },
-            { text: submitted ? 'Submitted' : 'Not submitted', className: `record-status${submitted ? ' submitted' : ''}` },
-            { text: record.win || '-' , className: 'record-win' }
+            { label: 'Date', text: record.date || 'Unknown', className: 'record-date' },
+            { label: 'Progress', text: `${count} / 9` },
+            { label: 'DSA', text: String(Number(record.dsa) || 0) },
+            { label: 'Deep work', text: formatDuration(record.deep_work_seconds) },
+            { label: 'Spent', text: record.money || '-' },
+            { label: 'Status', text: submitted ? 'Submitted' : 'Not submitted', className: `record-status${submitted ? ' submitted' : ''}` },
+            { label: 'Win of the day', text: record.win || '-', className: 'record-win' }
         ];
         values.forEach(value => {
             const cell = document.createElement('td');
             cell.textContent = value.text;
+            cell.dataset.label = value.label;
             if (value.className) cell.className = value.className;
             row.append(cell);
         });
 
         const taskCell = document.createElement('td');
+        taskCell.dataset.label = 'Tasks';
         const detailsButton = document.createElement('button');
         detailsButton.type = 'button';
         detailsButton.className = 'record-detail-button';
@@ -149,6 +152,7 @@ function renderRecords() {
         row.append(taskCell);
 
         const detailRow = document.createElement('tr');
+        detailRow.className = 'record-detail-row';
         detailRow.hidden = true;
         const detailCell = document.createElement('td');
         detailCell.colSpan = 8;
