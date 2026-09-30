@@ -46,7 +46,8 @@ header {
 h1 { 
     font-size: 2rem; 
     font-weight: 900; 
-    letter-spacing: 4px; 
+    letter-spacing: 0; 
+    line-height: 1.15;
     color: var(--accent-cyan); 
     text-transform: uppercase; 
 }
@@ -457,6 +458,145 @@ input[type="checkbox"]:checked::after {
 .record-objective { padding: 7px; border-left: 2px solid var(--border); color: var(--text-secondary); }
 .record-objective.done { border-color: var(--status-ready); color: var(--status-ready); }
 .admin-message { padding: 24px; color: var(--text-secondary); text-align: center; }
+
+@media (max-width: 600px) {
+    body {
+        padding: 16px;
+    }
+
+    .dashboard-container {
+        gap: 14px;
+    }
+
+    header {
+        padding: 18px 14px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    .status-card,
+    .auto-panel,
+    .objective-item {
+        padding: 14px;
+    }
+
+    .status-header {
+        gap: 10px;
+        font-size: 0.8rem;
+    }
+
+    #readiness-metrics {
+        flex: 0 0 auto;
+        text-align: right;
+    }
+
+    .auto-panel {
+        gap: 12px;
+    }
+
+    .auto-value {
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+
+    .objective-item {
+        gap: 10px;
+    }
+
+    .item-title {
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+
+    .timer-controls {
+        gap: 6px;
+    }
+
+    .timer-btn {
+        min-height: 40px;
+        padding: 7px 10px;
+    }
+
+    input[type="checkbox"] {
+        flex: 0 0 28px;
+        width: 28px;
+        height: 28px;
+    }
+
+    .submit-cloud-btn {
+        min-height: 48px;
+        padding: 12px 10px;
+        letter-spacing: 0;
+        line-height: 1.4;
+    }
+}
+
+@media (max-width: 420px) {
+    body {
+        padding: 10px;
+    }
+
+    .dashboard-container {
+        gap: 12px;
+    }
+
+    header {
+        padding: 16px 12px;
+    }
+
+    h1 {
+        font-size: 1.3rem;
+    }
+
+    .subtitle {
+        font-size: 0.7rem;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .status-header {
+        align-items: flex-start;
+        font-size: 0.74rem;
+    }
+
+    .auto-panel {
+        grid-template-columns: 1fr;
+    }
+
+    #item-2 {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .timer-controls {
+        justify-content: flex-end;
+    }
+
+    .calendar-grid {
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .calendar-cell {
+        min-height: 34px;
+        font-size: 0.75rem;
+    }
+
+    .modal-overlay {
+        padding: 10px;
+    }
+
+    .modal-content {
+        padding: 14px;
+    }
+
+    .calendar-legend {
+        gap: 8px;
+        font-size: 0.68rem;
+    }
+}
 
 @media (max-width: 560px) {
     .admin-topbar { align-items: flex-start; flex-direction: column; }
