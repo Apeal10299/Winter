@@ -14,7 +14,7 @@ Progress and calendar history are saved in the browser's local storage, using Ne
 
 Use **Save backup file** to export a JSON backup and choose where to save it, then **Restore backup** to import it later. Live autosaves still go to browser storage; the backup file is a separate copy. Browsers without a file-save picker download the backup using their normal download settings.
 
-The admin password is `admin123`, set in `warc-admin/admin.js`. Because this is a public GitHub Pages site, anyone can read the password in the JavaScript or bypass the login. It is only a convenience screen lock, not security. Do not use it to protect private data.
+The tracker and admin screen use a client-side convenience lock. Keep `TRACKER_PASSWORD` in `script.js` and `ADMIN_PASSWORD` in `warc-admin/admin.js` in sync when changing it. Because this is a public GitHub Pages site, anyone can read the password in the JavaScript or bypass the login. This lock is not security and must not be used to protect private data.
 
 ## PHP files
 

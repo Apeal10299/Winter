@@ -4,11 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WINTER ARC 9 | Daily Progress</title>
-    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
 
-<div class="dashboard-container">
+<main id="tracker-login" class="admin-login">
+    <h2>Tracker sign in</h2>
+    <form id="tracker-login-form">
+        <label for="tracker-password">Password</label>
+        <input id="tracker-password" type="password" autocomplete="current-password" required>
+        <button class="submit-cloud-btn" type="submit">Unlock tracker</button>
+        <p id="tracker-login-message" role="alert"></p>
+    </form>
+</main>
+
+<div id="tracker-app" class="dashboard-container" hidden>
     <header>
         <h1>WINTER ARC 2026</h1>
         <div class="subtitle" id="date-subtitle">Stored on this device</div>
@@ -146,6 +156,6 @@
     </div>
 </div>
 
-<script src="script.js?v=13"></script>
+<script src="script.js?v=14"></script>
 </body>
 </html>

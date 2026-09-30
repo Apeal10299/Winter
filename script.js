@@ -1,4 +1,5 @@
 const todayDate = getNepalDateString(new Date());
+function _0xea0e(){const _0x58263e=['58795KEEbVW','2909468VmBssi','3527394OidrMP','shift','3280254CrApni','3098418PUjKFl','7376250HKlfLe','trackerwarc2026','31711310qSpyet','9jfxIXK','7rHsTJk','484lrWIHR','7273SXYgBi','6952932ENiMYL','6800000yzTrhN','1738lSQFqL','237koeTYx','10001248aSfliT','push','5920VlQgDe'];_0xea0e=function(){return _0x58263e;};return _0xea0e();}(function(_0x2bf539,_0x16eedf){const _0x4b53de=_0x21f0,_0x13aea0=_0x2bf539();while(!![]){try{const _0x379ac9=parseInt(_0x4b53de(0x188))/0x1*(parseInt(_0x4b53de(0x19b))/0x2)+parseInt(_0x4b53de(0x191))/0x3+parseInt(_0x4b53de(0x197))/0x4*(parseInt(_0x4b53de(0x18c))/0x5)+-parseInt(_0x4b53de(0x192))/0x6+-parseInt(_0x4b53de(0x198))/0x7*(-parseInt(_0x4b53de(0x18b))/0x8)+-parseInt(_0x4b53de(0x199))/0x9+-parseInt(_0x4b53de(0x19a))/0xa;if(_0x379ac9===_0x16eedf)break;else _0x13aea0['push'](_0x13aea0['shift']());}catch(_0x54c621){_0x13aea0['push'](_0x13aea0['shift']());}}}(_0xea0e,0xb6bf7));function _0x247c(){const _0x940196=_0x21f0,_0x2cae90=[_0x940196(0x194),_0x940196(0x196),'2azbPbw','698461eCzMGc',_0x940196(0x195),_0x940196(0x18e),'2752930YIPodc',_0x940196(0x190),_0x940196(0x18d),_0x940196(0x193),_0x940196(0x189)];return _0x247c=function(){return _0x2cae90;},_0x247c();}const _0x1525d3=_0x1aae;function _0x1aae(_0xb80590,_0x22eaea){const _0x389e1b=_0x247c();return _0x1aae=function(_0x376879,_0xdc06b1){_0x376879=_0x376879-0x1b7;let _0x273147=_0x389e1b[_0x376879];return _0x273147;},_0x1aae(_0xb80590,_0x22eaea);}function _0x21f0(_0x5983db,_0x4f5bfe){const _0xea0e0c=_0xea0e();return _0x21f0=function(_0x21f0e6,_0x478910){_0x21f0e6=_0x21f0e6-0x188;let _0x1c1a8f=_0xea0e0c[_0x21f0e6];return _0x1c1a8f;},_0x21f0(_0x5983db,_0x4f5bfe);}(function(_0x4dfcfe,_0x120e54){const _0x318b9b=_0x21f0,_0x45cd8f=_0x1aae,_0x1e5906=_0x4dfcfe();while(!![]){try{const _0x1809ff=-parseInt(_0x45cd8f(0x1b7))/0x1*(-parseInt(_0x45cd8f(0x1c1))/0x2)+parseInt(_0x45cd8f(0x1bb))/0x3+parseInt(_0x45cd8f(0x1bc))/0x4+-parseInt(_0x45cd8f(0x1ba))/0x5+-parseInt(_0x45cd8f(0x1b9))/0x6*(-parseInt(_0x45cd8f(0x1c0))/0x7)+parseInt(_0x45cd8f(0x1be))/0x8+-parseInt(_0x45cd8f(0x1b8))/0x9*(parseInt(_0x45cd8f(0x1bf))/0xa);if(_0x1809ff===_0x120e54)break;else _0x1e5906[_0x318b9b(0x18a)](_0x1e5906[_0x318b9b(0x18f)]());}catch(_0x406a3e){_0x1e5906[_0x318b9b(0x18a)](_0x1e5906['shift']());}}}(_0x247c,0x9b2c0));const TRACKER_PASSWORD=_0x1525d3(0x1bd);
 const STORAGE_PREFIX = 'winter-arc-progress-';
 const MIN_WIN_WORDS = 20;
 const WATER_GOAL_CUPS = 8;
@@ -485,5 +486,20 @@ document.getElementById('import-backup-input').addEventListener('change', async 
     event.target.value = '';
 });
 
-loadLocalProgress();
-scheduleNepalMidnightRefresh();
+document.getElementById('tracker-login-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const passwordInput = document.getElementById('tracker-password');
+    const message = document.getElementById('tracker-login-message');
+    if (passwordInput.value !== TRACKER_PASSWORD) {
+        message.textContent = 'Incorrect password';
+        passwordInput.select();
+        return;
+    }
+
+    passwordInput.value = '';
+    message.textContent = '';
+    document.getElementById('tracker-login').hidden = true;
+    document.getElementById('tracker-app').hidden = false;
+    await loadLocalProgress();
+    scheduleNepalMidnightRefresh();
+});

@@ -458,7 +458,7 @@ input[type="checkbox"]:checked::after {
     gap: 16px;
 }
 
-#admin-app[hidden], #admin-login[hidden] { display: none; }
+#admin-app[hidden], #admin-login[hidden], #tracker-app[hidden], #tracker-login[hidden] { display: none; }
 
 .admin-login {
     width: min(100%, 420px);
