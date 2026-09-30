@@ -1,7 +1,7 @@
-# Admin password setup (XAMPP)
+# Admin password setup (local XAMPP only)
 
-The admin login reads `WARC_ADMIN_PASSWORD` from the root `.htaccess` file. That local file is ignored by Git and the password is checked only by PHP, not exposed in the admin page's JavaScript.
+The PHP admin login reads `WARC_ADMIN_PASSWORD` from the root `.htaccess` file. Keep that file out of Git and set a unique password there before using the admin panel at `http://localhost/warc/warc-admin/`.
 
-The configured password is `admin123`. To change it, update the `WARC_ADMIN_PASSWORD` value in `.htaccess` and restart Apache.
+A previous version of this guide included a sample password. Treat that password as public and do not reuse it. The current static tracker saves only to browser storage and does not write to the PHP database. GitHub Pages does not run this PHP admin panel or protect the tracker with authentication; the Pages workflow excludes the PHP files and admin panel from deployment.
 
-The admin login is available at `http://localhost/warc/warc-admin/`. `admin123` is weak; replace it with a unique password before exposing the app beyond localhost. For internet-facing deployment, use HTTPS and protect the tracker endpoints as well; the daily tracker is designed to remain accessible without signing in.
+Do not expose the XAMPP/PHP endpoints to the internet without adding authentication and HTTPS protection to the tracker endpoints as well.

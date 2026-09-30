@@ -1,7 +1,6 @@
-const API_URL = 'api.php';
 const todayDate = getLocalDateString(new Date());
 const STORAGE_PREFIX = 'winter-arc-progress-';
-document.getElementById('date-subtitle').innerText = `Ops Log Date: ${todayDate}`;
+document.getElementById('date-subtitle').innerText = `Stored on this device: ${todayDate}`;
 const objectiveNames = Array.from(document.querySelectorAll('.item-title')).map(item => item.textContent.trim());
 
 function getLocalDateString(date) {
@@ -18,31 +17,9 @@ let timerInterval = null;
 let isRunning = false;
 let submitResetTimer = null;
 
-async function loadDataFromBackend() {
+async function loadLocalProgress() {
     const localData = readLocalProgress(todayDate);
     if (localData) applyProgress(localData);
-
-    try {
-        const res = await fetch(`${API_URL}?date=${encodeURIComponent(todayDate)}`);
-        const data = await readApiResponse(res);
-        if (!res.ok) throw new Error(data.error || `Load failed (${res.status})`);
-        if (data.error) throw new Error(data.error);
-        if (data.found === false && localData) {
-            applyProgress(localData);
-            writeLocalProgress(localData);
-            await saveDataToBackend();
-        } else {
-            const serverSeconds = Number(data.deep_work_seconds) || 0;
-            const localSeconds = Number(localData?.deep_work_seconds) || 0;
-            const progress = { ...data, deep_work_seconds: Math.max(serverSeconds, localSeconds) };
-            applyProgress(progress);
-            writeLocalProgress(progress);
-            if (localSeconds > serverSeconds) await saveDataToBackend();
-        }
-        document.getElementById('date-subtitle').innerText = `Synced: ${todayDate}`;
-    } catch (err) {
-        showDatabaseError(err);
-    }
     restorePendingProgressReset();
     restoreTimerState();
 }
@@ -109,7 +86,7 @@ function renderDeepWorkLogged() {
     document.getElementById('deep-work-logged').textContent = `Logged today: ${formatted}`;
 }
 
-async function saveDataToBackend(submitted = 0) {
+async function saveProgressLocally(submitted = 0) {
     const dsaVal = parseInt(document.getElementById('num-dsa').value) || 0;
     const winText = document.getElementById('win-input').value;
     const winPassed = winText.trim().length > 0;
@@ -139,47 +116,16 @@ async function saveDataToBackend(submitted = 0) {
     updateUI();
     writeLocalProgress(payload);
 
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        const result = await readApiResponse(response);
-        if (!response.ok) throw new Error(result.error || `Save failed (${response.status})`);
-        if (!result.success) throw new Error(result.error || 'Save was rejected');
-        document.getElementById('date-subtitle').innerText = `Synced: ${todayDate}`;
-        document.getElementById('date-subtitle').removeAttribute('title');
-        if (document.getElementById('calendar-modal').style.display === 'flex') await renderCalendar();
-        return true;
-    } catch (err) {
-        showDatabaseError(err);
-        return false;
-    }
-}
-
-async function readApiResponse(response) {
-    const body = await response.text();
-    try {
-        return JSON.parse(body);
-    } catch (err) {
-        throw new Error(`PHP returned an invalid response (${response.status}). Check the Apache/PHP error log.`);
-    }
-}
-
-function showDatabaseError(error) {
-    const subtitle = document.getElementById('date-subtitle');
-    const message = error?.message || 'Unknown database error';
-    subtitle.innerText = `Local only: ${message}`;
-    subtitle.title = message;
-    console.error('Database sync failed:', message);
+    document.getElementById('date-subtitle').innerText = `Stored on this device: ${todayDate}`;
+    if (document.getElementById('calendar-modal').style.display === 'flex') await renderCalendar();
+    return true;
 }
 
 function autoSave() {
-    saveDataToBackend();
+    saveProgressLocally();
 }
 
-async function submitToCloud() {
+async function submitTodayProgress() {
     const resetAt = Date.now() + 50000;
     try {
         localStorage.setItem(`${STORAGE_PREFIX}reset-at-${todayDate}`, String(resetAt));
@@ -188,9 +134,9 @@ async function submitToCloud() {
     }
     scheduleProgressReset(50000);
 
-    const saved = await saveDataToBackend(1);
+    const saved = await saveProgressLocally(1);
     const button = document.getElementById('submit-btn');
-    button.innerText = saved ? 'Submitted' : 'Saved on This Device';
+    button.innerText = saved ? 'Saved for today' : 'Save failed';
 }
 
 function scheduleProgressReset(delay) {
@@ -253,8 +199,8 @@ async function resetTodayProgress() {
     document.getElementById('money-spent').value = '';
     document.getElementById('win-input').value = '';
     updateUI();
-    await saveDataToBackend();
-    document.getElementById('submit-btn').innerText = 'Lock & Submit to Cloud';
+    await saveProgressLocally();
+    document.getElementById('submit-btn').innerText = 'Save today\'s progress';
     submitResetTimer = null;
 }
 
@@ -292,21 +238,15 @@ function updateUI() {
 
 async function renderCalendar() {
     const grid = document.getElementById('calendar-grid');
-    let history;
-    try {
-        const historyResponse = await fetch(`${API_URL}?history=1`);
-        if (!historyResponse.ok) throw new Error(`Calendar load failed (${historyResponse.status})`);
-        history = await historyResponse.json();
-    } catch (err) {
-        history = Object.keys(localStorage)
-            .filter(key => key.startsWith(STORAGE_PREFIX))
-            .map(key => {
-                const date = key.slice(STORAGE_PREFIX.length);
-                const saved = readLocalProgress(date);
-                return saved ? { date, completed: countCompleted(saved) } : null;
-            })
-            .filter(Boolean);
-    }
+    const history = Object.keys(localStorage)
+        .filter(key => key.startsWith(STORAGE_PREFIX))
+        .map(key => {
+            const date = key.slice(STORAGE_PREFIX.length);
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+            const saved = readLocalProgress(date);
+            return saved ? { date, completed: countCompleted(saved) } : null;
+        })
+        .filter(Boolean);
     const progressByDate = new Map(history.map(day => [day.date, Number(day.completed) || 0]));
     const today = new Date();
 
@@ -349,14 +289,7 @@ function closeCalendarOnBackdrop(event) {
 }
 
 async function openDayDetails(date) {
-    let data = readLocalProgress(date);
-    try {
-        const response = await fetch(`${API_URL}?date=${encodeURIComponent(date)}&details=1`);
-        if (!response.ok) throw new Error(`Load failed (${response.status})`);
-        data = await response.json();
-    } catch (err) {
-        data = data?.archive || data || { checks: '', dsa: 0, win: '' };
-    }
+    const data = readLocalProgress(date) || { checks: '', dsa: 0, win: '' };
     const checks = (data.checks || '').split(',').map(value => value === 'true');
     const dsa = Number(data.dsa) || 0;
     const winPassed = (data.win || '').trim().length > 0;
@@ -410,7 +343,7 @@ function toggleTimer() {
                 document.getElementById('timer-display').innerText = "DONE";
                 document.getElementById('check-2').checked = true;
                 saveTimerProgressLocally();
-                saveDataToBackend();
+                saveProgressLocally();
                 return;
             }
             totalSeconds--;
@@ -418,7 +351,7 @@ function toggleTimer() {
             renderTimerDisplay();
             renderDeepWorkLogged();
             saveTimerProgressLocally();
-            if (deepWorkSeconds % 60 === 0) saveDataToBackend();
+            if (deepWorkSeconds % 60 === 0) saveProgressLocally();
         }, 1000);
     } else {
         clearInterval(timerInterval);
@@ -426,7 +359,7 @@ function toggleTimer() {
         isRunning = false;
         btn.innerText = "Resume";
         saveTimerProgressLocally();
-        saveDataToBackend();
+        saveProgressLocally();
     }
 }
 
@@ -438,7 +371,7 @@ function resetTimer() {
     document.getElementById('timer-main-btn').innerText = "Start";
     renderTimerDisplay();
     saveTimerProgressLocally();
-    saveDataToBackend();
+    saveProgressLocally();
 }
 
 function renderTimerDisplay() {
@@ -449,4 +382,4 @@ function renderTimerDisplay() {
         `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-loadDataFromBackend();
+loadLocalProgress();
