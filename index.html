@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WINTER ARC 9 | Daily Progress</title>
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 
@@ -52,6 +52,18 @@
         </div>
     </section>
 
+    <section class="status-card storage-panel" aria-labelledby="storage-title">
+        <div class="status-header">
+            <span id="storage-title">Data Backup</span>
+        </div>
+        <p id="storage-status" class="storage-status">Progress autosaves in this browser. Save a JSON backup to choose a file location, or restore one later.</p>
+        <div class="storage-actions">
+            <button class="timer-btn" id="export-backup" type="button">Save backup file</button>
+            <button class="timer-btn" id="import-backup-button" type="button">Restore backup</button>
+            <input id="import-backup-input" type="file" accept=".json,application/json" hidden>
+        </div>
+    </section>
+
     <section class="objectives-list">
         <div class="objective-item" id="item-0"><div class="objective-info"><span class="item-title">1. 5:00 AM Wakeup</span></div><input type="checkbox" id="check-0" onchange="autoSave()"></div>
         <div class="objective-item" id="item-1"><div class="objective-info"><span class="item-title">2. Workout</span></div><input type="checkbox" id="check-1" onchange="autoSave()"></div>
@@ -83,7 +95,7 @@
 
     <button class="submit-cloud-btn" id="submit-btn" onclick="submitTodayProgress()">Save today's progress</button>
 
-    <footer>Progress is stored in this browser</footer>
+    <footer>Progress is stored in this browser · New day starts at midnight Nepal time</footer>
 </div>
 
 <div id="calendar-modal" class="modal-overlay" style="display:none;" onclick="closeCalendarOnBackdrop(event)">
@@ -114,6 +126,6 @@
     </div>
 </div>
 
-<script src="script.js?v=8"></script>
+<script src="script.js?v=10"></script>
 </body>
 </html>

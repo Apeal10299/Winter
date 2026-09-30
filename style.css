@@ -207,6 +207,32 @@ h1 {
     gap: 15px; 
 }
 
+.storage-panel {
+    display: grid;
+    gap: 10px;
+}
+
+.storage-panel .status-header {
+    margin-bottom: 0;
+}
+
+.storage-status {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.storage-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+    gap: 8px;
+}
+
+.storage-actions .timer-btn {
+    min-height: 42px;
+}
+
 .auto-item { 
     display: flex; 
     flex-direction: column; 

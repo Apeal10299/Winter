@@ -1,13 +1,29 @@
-const todayDate = getLocalDateString(new Date());
+const todayDate = getNepalDateString(new Date());
 const STORAGE_PREFIX = 'winter-arc-progress-';
 document.getElementById('date-subtitle').innerText = `Stored on this device: ${todayDate}`;
 const objectiveNames = Array.from(document.querySelectorAll('.item-title')).map(item => item.textContent.trim());
 
-function getLocalDateString(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+function getNepalDateString(date) {
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Kathmandu',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).formatToParts(date);
+    const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}`;
+}
+
+function scheduleNepalMidnightRefresh() {
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Kathmandu',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric'
+    }).formatToParts(new Date());
+    const values = Object.fromEntries(parts.map(part => [part.type, Number(part.value)]));
+    const nextMidnightUtc = Date.UTC(values.year, values.month - 1, values.day + 1) - 345 * 60 * 1000;
+    window.setTimeout(() => window.location.reload(), Math.max(1, nextMidnightUtc - Date.now() + 500));
 }
 
 // Timer Variables
@@ -62,6 +78,72 @@ function writeLocalProgress(data) {
         localStorage.setItem(`${STORAGE_PREFIX}${date}`, JSON.stringify({ ...data, date, archive }));
     } catch (err) {
         console.error('Unable to save progress on this device:', err);
+    }
+}
+
+function getProgressBackup() {
+    const records = Object.keys(localStorage)
+        .filter(key => key.startsWith(STORAGE_PREFIX))
+        .map(key => {
+            const date = key.slice(STORAGE_PREFIX.length);
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+            const progress = readLocalProgress(date);
+            return progress ? { date, progress } : null;
+        })
+        .filter(Boolean);
+    return { format: 'winter-arc-progress', version: 1, records };
+}
+
+async function exportProgressBackup() {
+    const backup = new Blob([JSON.stringify(getProgressBackup(), null, 2)], { type: 'application/json' });
+    try {
+        if ('showSaveFilePicker' in window) {
+            const file = await window.showSaveFilePicker({
+                suggestedName: `winter-arc-backup-${todayDate}.json`,
+                types: [{ description: 'JSON backup', accept: { 'application/json': ['.json'] } }]
+            });
+            const writable = await file.createWritable();
+            await writable.write(backup);
+            await writable.close();
+        } else {
+            const url = URL.createObjectURL(backup);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `winter-arc-backup-${todayDate}.json`;
+            link.click();
+            window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+        document.getElementById('storage-status').textContent = 'Backup saved. Choose a secure location for this file.';
+    } catch (error) {
+        if (error.name !== 'AbortError') {
+            document.getElementById('storage-status').textContent = 'Unable to save the backup file.';
+            console.error('Unable to export progress backup:', error);
+        }
+    }
+}
+
+async function importProgressBackup(file) {
+    const status = document.getElementById('storage-status');
+    try {
+        const backup = JSON.parse(await file.text());
+        if (backup.format !== 'winter-arc-progress' || !Array.isArray(backup.records)) {
+            throw new Error('This is not a Winter Arc progress backup.');
+        }
+        const records = backup.records.filter(record => record
+            && /^\d{4}-\d{2}-\d{2}$/.test(record.date)
+            && record.progress && typeof record.progress === 'object');
+        if (!records.length) throw new Error('The backup does not contain valid progress records.');
+        if (!window.confirm(`Restore ${records.length} records? Matching dates will be replaced.`)) return;
+
+        records.forEach(({ date, progress }) => {
+            localStorage.setItem(`${STORAGE_PREFIX}${date}`, JSON.stringify({ ...progress, date }));
+        });
+        const todayProgress = readLocalProgress(todayDate);
+        if (todayProgress) applyProgress(todayProgress);
+        await renderCalendar();
+        status.textContent = `Restored ${records.length} records from backup.`;
+    } catch (error) {
+        status.textContent = error.message || 'Unable to read the backup file.';
     }
 }
 
@@ -248,20 +330,20 @@ async function renderCalendar() {
         })
         .filter(Boolean);
     const progressByDate = new Map(history.map(day => [day.date, Number(day.completed) || 0]));
-    const today = new Date();
+    const today = new Date(`${todayDate}T00:00:00Z`);
 
     grid.replaceChildren();
     for (let offset = 29; offset >= 0; offset--) {
         const date = new Date(today);
-        date.setDate(today.getDate() - offset);
-        const dateKey = getLocalDateString(date);
+        date.setUTCDate(today.getUTCDate() - offset);
+        const dateKey = date.toISOString().slice(0, 10);
         const completed = dateKey === todayDate
             ? Math.max(updateUI(), progressByDate.get(dateKey) || 0)
             : (progressByDate.get(dateKey) || 0);
         const cell = document.createElement('button');
         cell.type = 'button';
         cell.className = `calendar-cell ${completed >= 6 ? 'high' : completed >= 3 ? 'medium' : 'low'}`;
-        cell.textContent = String(date.getDate());
+        cell.textContent = String(date.getUTCDate());
         cell.title = `${dateKey}: ${completed}/9 tasks`;
         cell.setAttribute('aria-label', `${dateKey}, ${completed} of 9 tasks completed`);
         cell.addEventListener('click', () => openDayDetails(dateKey));
@@ -382,4 +464,15 @@ function renderTimerDisplay() {
         `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
+document.getElementById('export-backup').addEventListener('click', exportProgressBackup);
+document.getElementById('import-backup-button').addEventListener('click', () => {
+    document.getElementById('import-backup-input').click();
+});
+document.getElementById('import-backup-input').addEventListener('change', async event => {
+    const [file] = event.target.files;
+    if (file) await importProgressBackup(file);
+    event.target.value = '';
+});
+
 loadLocalProgress();
+scheduleNepalMidnightRefresh();

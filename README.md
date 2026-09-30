@@ -10,7 +10,9 @@ To publish it:
 2. In the repository, open **Settings > Pages** and set the build and deployment source to **GitHub Actions**.
 3. Open the Pages URL shown in the repository settings after the workflow completes.
 
-Progress and calendar history are saved in the browser's local storage. The admin screen reads records from that same browser profile, so it will not show data saved on another device or browser. Clearing browser site data removes the records.
+Progress and calendar history are saved in the browser's local storage, using Nepal time for daily records and refreshing after midnight in Kathmandu. The admin screen reads records from that same browser profile, so it will not show data saved on another device or browser. Clearing browser site data removes the records.
+
+Use **Save backup file** to export a JSON backup and choose where to save it, then **Restore backup** to import it later. Live autosaves still go to browser storage; the backup file is a separate copy. Browsers without a file-save picker download the backup using their normal download settings.
 
 The admin password is `admin123`, set in `warc-admin/admin.js`. Because this is a public GitHub Pages site, anyone can read the password in the JavaScript or bypass the login. It is only a convenience screen lock, not security. Do not use it to protect private data.
 
