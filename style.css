@@ -476,16 +476,20 @@ input[type="checkbox"]:checked::after {
     border-bottom: 1px solid var(--border);
     color: var(--accent-amber);
     font-size: 0.72rem;
+    background: rgba(17, 24, 39, 0.35);
     white-space: nowrap;
 }
 .quote-marquee span {
     display: inline-block;
-    min-width: 100%;
-    animation: quote-marquee-scroll 45s linear infinite;
+    min-width: max-content;
+    padding-right: 2rem;
+    white-space: nowrap;
+    will-change: transform;
+    animation: quote-marquee-scroll 28s linear infinite;
 }
 @keyframes quote-marquee-scroll {
-    from { transform: translateX(100%); }
-    to { transform: translateX(-100%); }
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
 }
 @media (prefers-reduced-motion: reduce) {
     .quote-marquee span { animation: none; }

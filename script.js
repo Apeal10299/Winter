@@ -36,11 +36,15 @@ let fallbackQuoteIndex = 0;
 let remoteQuotes = [];
 let remoteQuoteIndex = 0;
 
+function formatQuoteText(quoteText) {
+    return `${quoteText}   •   ${quoteText}   •   ${quoteText}`;
+}
+
 async function loadMotivationQuote() {
     const quoteElement = document.getElementById('motivation-quote');
     try {
         if (!remoteQuotes.length) {
-            const response = await fetch('https://dummyjson.com/quotes?limit=0', {
+            const response = await fetch('https://dummyjson.com/quotes?limit=100', {
                 headers: { Accept: 'application/json' }
             });
             if (!response.ok) throw new Error(`Quote request failed: ${response.status}`);
@@ -48,14 +52,16 @@ async function loadMotivationQuote() {
             remoteQuotes = Array.isArray(data.quotes)
                 ? data.quotes.filter(quote => quote && quote.quote)
                 : [];
-            if (remoteQuotes.length < 100) throw new Error('Quote response contained fewer than 100 quotes');
+            if (!remoteQuotes.length) throw new Error('Quote response was empty');
         }
         const quote = remoteQuotes[remoteQuoteIndex];
         remoteQuoteIndex = (remoteQuoteIndex + 1) % remoteQuotes.length;
-        quoteElement.textContent = `"${quote.quote}" - ${quote.author || 'Unknown'}`;
+        const quoteText = `"${quote.quote}" - ${quote.author || 'Unknown'}`;
+        quoteElement.textContent = formatQuoteText(quoteText);
     } catch (error) {
-        quoteElement.textContent = fallbackQuotes[fallbackQuoteIndex];
+        const fallbackText = fallbackQuotes[fallbackQuoteIndex];
         fallbackQuoteIndex = (fallbackQuoteIndex + 1) % fallbackQuotes.length;
+        quoteElement.textContent = formatQuoteText(fallbackText);
         console.warn('Unable to fetch a motivation quote:', error);
     }
 }
