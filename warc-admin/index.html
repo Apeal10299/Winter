@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WINTER ARC 9 | Admin</title>
+    <link rel="stylesheet" href="../style.css?v=5">
+</head>
+<body>
+<main class="admin-container">
+    <header>
+        <h1>WINTER ARC 9</h1>
+        <div class="subtitle">Daily records / admin</div>
+    </header>
+
+    <section id="admin-login" class="admin-login" hidden>
+        <h2>Admin sign in</h2>
+        <form id="admin-login-form">
+            <label for="admin-password">Password</label>
+            <input id="admin-password" type="password" autocomplete="current-password" required>
+            <button class="submit-cloud-btn" type="submit">Sign in</button>
+            <a class="submit-cloud-btn" href="../index.html">Cancel</a>
+            <p id="login-message" role="alert"></p>
+        </form>
+    </section>
+
+    <div id="admin-app" hidden>
+        <div class="admin-topbar">
+            <div>
+                <h2>All Daily Records</h2>
+                <div class="subtitle" id="admin-updated">Loading records</div>
+            </div>
+            <div class="admin-actions">
+                <a href="../index.html">Back to tracker</a>
+                <button class="timer-btn" id="export-records" type="button">Export CSV</button>
+                <button class="timer-btn stop" id="admin-logout" type="button">Sign out</button>
+            </div>
+        </div>
+
+        <section class="admin-stats" aria-label="Record summary">
+            <div class="admin-stat"><span>Days tracked</span><strong id="stat-days">--</strong></div>
+            <div class="admin-stat"><span>Average completion</span><strong id="stat-average">--</strong></div>
+            <div class="admin-stat"><span>Submitted days</span><strong id="stat-submitted">--</strong></div>
+            <div class="admin-stat"><span id="stat-spend-label">Spend this month</span><strong id="stat-spend">--</strong></div>
+            <div class="admin-stat"><span>Deep work logged</span><strong id="stat-deep-work">--</strong></div>
+        </section>
+
+        <section class="admin-filters" aria-label="Filter records">
+            <div class="calendar-filter-group">
+                <input id="month-filter" type="month" aria-label="Filter by month">
+                <input id="date-from" type="date" aria-label="From date">
+                <input id="date-to" type="date" aria-label="To date">
+                <button class="timer-btn" id="refresh-records" type="button">Refresh results</button>
+            </div>
+            <div class="record-filter-group">
+                <input id="record-search" type="search" placeholder="Search date, spending, or win of the day">
+                <select id="submission-filter" aria-label="Submission status">
+                    <option value="all">All records</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="draft">Not submitted</option>
+                </select>
+            </div>
+        </section>
+
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr><th>Date</th><th>Progress</th><th>DSA</th><th>Deep work</th><th>Spent</th><th>Status</th><th>Win of the day</th><th>Tasks</th></tr>
+                </thead>
+                <tbody id="records-body"><tr><td class="admin-message" colspan="8">Loading records...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</main>
+<script src="admin.js?v=5"></script>
+</body>
+</html>
