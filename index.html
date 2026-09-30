@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WINTER ARC 9 | Daily Progress</title>
-    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 
@@ -87,8 +87,12 @@
         <div class="objective-item" id="item-6"><div class="objective-info"><span class="item-title">7. No Scroll</span></div><input type="checkbox" id="check-6" onchange="autoSave()"></div>
         <div class="objective-item" id="item-7"><div class="objective-info"><span class="item-title">8. Mobile Stop</span></div><input type="checkbox" id="check-7" onchange="autoSave()"></div>
         <div class="objective-item" id="item-8" style="flex-direction: column; align-items: stretch; gap: 8px;">
-            <div class="objective-info"><span class="item-title">9. Win of the Day</span></div>
-            <input type="text" id="win-input" class="text-input" placeholder="What did you do good today?" oninput="autoSave()">
+            <div class="objective-info">
+                <span class="item-title">9. Win of the Day</span>
+                <label class="item-desc" for="win-input">Minimum 100 words</label>
+            </div>
+            <textarea id="win-input" class="text-input" rows="5" aria-describedby="win-word-count" placeholder="What did you do well today?" oninput="autoSave()"></textarea>
+            <span class="item-desc" id="win-word-count" aria-live="polite">0 / 100 words</span>
             <input type="checkbox" id="check-8" style="display:none;">
         </div>
     </section>
@@ -126,6 +130,6 @@
     </div>
 </div>
 
-<script src="script.js?v=10"></script>
+<script src="script.js?v=11"></script>
 </body>
 </html>

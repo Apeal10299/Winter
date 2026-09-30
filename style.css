@@ -260,6 +260,16 @@ h1 {
     width: 100%; 
 }
 
+textarea.text-input {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+#win-word-count.complete {
+    color: var(--status-ready);
+}
+
 .money-input:focus, .text-input:focus, .num-input:focus { 
     outline: none; 
     border-color: var(--accent-cyan); 
@@ -770,8 +780,25 @@ input[type="checkbox"]:checked::after {
 }
 
 @media (max-width: 560px) {
-    .admin-topbar { align-items: flex-start; flex-direction: column; }
-    .admin-stats { grid-template-columns: 1fr; }
+    .admin-topbar { align-items: stretch; flex-direction: column; }
+    .admin-actions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+    }
+    .admin-actions > * {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 0;
+        min-height: 48px;
+        padding: 6px 4px;
+        font-size: 0.65rem;
+        line-height: 1.25;
+        text-align: center;
+        overflow-wrap: anywhere;
+    }
+    .admin-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .calendar-filter-group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .calendar-filter-group button { grid-column: 2; }
     .record-filter-group { grid-template-columns: minmax(0, 1fr); }

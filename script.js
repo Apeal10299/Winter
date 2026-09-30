@@ -1,5 +1,6 @@
 const todayDate = getNepalDateString(new Date());
 const STORAGE_PREFIX = 'winter-arc-progress-';
+const MIN_WIN_WORDS = 100;
 document.getElementById('date-subtitle').innerText = `Stored on this device: ${todayDate}`;
 const objectiveNames = Array.from(document.querySelectorAll('.item-title')).map(item => item.textContent.trim());
 
@@ -12,6 +13,11 @@ function getNepalDateString(date) {
     }).formatToParts(date);
     const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
     return `${values.year}-${values.month}-${values.day}`;
+}
+
+function countWords(text) {
+    const trimmed = text.trim();
+    return trimmed ? trimmed.split(/\s+/).length : 0;
 }
 
 function scheduleNepalMidnightRefresh() {
@@ -49,7 +55,7 @@ function applyProgress(data) {
     document.getElementById('money-spent').value = data.money || '';
     document.getElementById('win-input').value = data.win || '';
     deepWorkSeconds = Math.max(0, Number(data.deep_work_seconds) || 0);
-    document.getElementById('check-8').checked = (data.win || '').trim().length > 0;
+    document.getElementById('check-8').checked = countWords(data.win || '') >= MIN_WIN_WORDS;
     renderDeepWorkLogged();
     updateUI();
 }
@@ -171,7 +177,7 @@ function renderDeepWorkLogged() {
 async function saveProgressLocally(submitted = 0) {
     const dsaVal = parseInt(document.getElementById('num-dsa').value) || 0;
     const winText = document.getElementById('win-input').value;
-    const winPassed = winText.trim().length > 0;
+    const winPassed = countWords(winText) >= MIN_WIN_WORDS;
     document.getElementById('check-8').checked = winPassed;
 
     let checksArr = [];
@@ -289,7 +295,11 @@ async function resetTodayProgress() {
 function updateUI() {
     let completedCount = 0;
     const dsaVal = parseInt(document.getElementById('num-dsa').value) || 0;
-    const winPassed = document.getElementById('win-input').value.trim().length > 0;
+    const winWords = countWords(document.getElementById('win-input').value);
+    const winPassed = winWords >= MIN_WIN_WORDS;
+    const wordCountDisplay = document.getElementById('win-word-count');
+    wordCountDisplay.textContent = `${winWords} / ${MIN_WIN_WORDS} words`;
+    wordCountDisplay.classList.toggle('complete', winPassed);
 
     for (let i = 0; i < 9; i++) {
         let isPassed = false;
@@ -374,7 +384,7 @@ async function openDayDetails(date) {
     const data = readLocalProgress(date) || { checks: '', dsa: 0, win: '' };
     const checks = (data.checks || '').split(',').map(value => value === 'true');
     const dsa = Number(data.dsa) || 0;
-    const winPassed = (data.win || '').trim().length > 0;
+    const winPassed = countWords(data.win || '') >= MIN_WIN_WORDS;
     const totalCompleted = countCompleted(data);
     const body = document.getElementById('modal-body');
     document.getElementById('modal-date-title').textContent = `${date} - ${totalCompleted}/9 completed`;
@@ -398,7 +408,7 @@ function countCompleted(data) {
     } : data);
     const checks = (progress.checks || '').split(',').map(value => value === 'true');
     const dsaPassed = Number(progress.dsa) >= 2;
-    const winPassed = (progress.win || '').trim().length > 0;
+    const winPassed = countWords(progress.win || '') >= MIN_WIN_WORDS;
     return checks.reduce((total, passed, index) => {
         if (index === 3) return total + (dsaPassed ? 1 : 0);
         if (index === 8) return total + (winPassed ? 1 : 0);

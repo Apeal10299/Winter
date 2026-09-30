@@ -1,5 +1,6 @@
 const ADMIN_PASSWORD = 'admin123';
 const STORAGE_PREFIX = 'winter-arc-progress-';
+const MIN_WIN_WORDS = 100;
 const objectiveNames = [
     '5:00 AM Wakeup',
     'Workout',
@@ -12,6 +13,11 @@ const objectiveNames = [
     'Win of the Day'
 ];
 let allRecords = [];
+
+function countWords(text) {
+    const trimmed = String(text || '').trim();
+    return trimmed ? trimmed.split(/\s+/).length : 0;
+}
 
 function checkAuthentication() {
     const loginPanel = document.getElementById('admin-login');
@@ -51,7 +57,7 @@ function loadRecords() {
 function completedCount(record) {
     const checks = (record.checks || '').split(',').map(value => value === 'true');
     const dsaPassed = Number(record.dsa) >= 2;
-    const winPassed = (record.win || '').trim().length > 0;
+    const winPassed = countWords(record.win) >= MIN_WIN_WORDS;
     return objectiveNames.reduce((total, _name, index) => {
         if (index === 3) return total + Number(dsaPassed);
         if (index === 8) return total + Number(winPassed);
@@ -162,7 +168,7 @@ function renderRecords() {
         const checks = (record.checks || '').split(',').map(value => value === 'true');
         objectiveNames.forEach((name, index) => {
             const passed = index === 3 ? Number(record.dsa) >= 2
-                : index === 8 ? (record.win || '').trim().length > 0
+                : index === 8 ? countWords(record.win) >= MIN_WIN_WORDS
                     : Boolean(checks[index]);
             const objective = document.createElement('div');
             objective.className = `record-objective${passed ? ' done' : ''}`;
