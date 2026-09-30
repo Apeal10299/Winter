@@ -1,5 +1,5 @@
-const ADMIN_API_URL = '../api.php?all=1';
-const AUTH_API_URL = '../api.php?auth=1';
+const ADMIN_PASSWORD = 'admin123';
+const STORAGE_PREFIX = 'winter-arc-progress-';
 const objectiveNames = [
     '5:00 AM Wakeup',
     'Workout',
@@ -13,47 +13,38 @@ const objectiveNames = [
 ];
 let allRecords = [];
 
-async function checkAuthentication() {
+function checkAuthentication() {
     const loginPanel = document.getElementById('admin-login');
     const adminApp = document.getElementById('admin-app');
-    try {
-        const response = await fetch(AUTH_API_URL, { cache: 'no-store' });
-        const auth = await response.json();
-        if (!auth.configured) {
-            loginPanel.hidden = false;
-            document.getElementById('login-message').textContent = 'Admin password is not configured on the server.';
-            return;
-        }
-        loginPanel.hidden = Boolean(auth.authenticated);
-        adminApp.hidden = !auth.authenticated;
-        if (auth.authenticated) await loadRecords();
-    } catch (error) {
-        loginPanel.hidden = false;
-        document.getElementById('login-message').textContent = 'Unable to contact the server.';
-    }
+    loginPanel.hidden = false;
+    adminApp.hidden = true;
 }
 
-async function loadRecords() {
+function loadRecords() {
     const status = document.getElementById('admin-updated');
-    status.textContent = 'Loading records';
     try {
-        const response = await fetch(ADMIN_API_URL);
-        const records = await response.json();
-        if (response.status === 401) {
-            document.getElementById('admin-app').hidden = true;
-            document.getElementById('admin-login').hidden = false;
-            return;
-        }
-        if (!response.ok || !Array.isArray(records)) {
-            throw new Error(records.error || `Request failed (${response.status})`);
-        }
-        allRecords = records;
+        allRecords = Object.keys(localStorage)
+            .filter(key => key.startsWith(STORAGE_PREFIX))
+            .map(key => {
+                const date = key.slice(STORAGE_PREFIX.length);
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+                const saved = JSON.parse(localStorage.getItem(key));
+                if (!saved || typeof saved !== 'object') return null;
+                const progress = saved.archive || saved;
+                return {
+                    ...progress,
+                    date,
+                    submitted: saved.archive || Number(saved.submitted) === 1 ? 1 : 0
+                };
+            })
+            .filter(Boolean)
+            .sort((first, second) => second.date.localeCompare(first.date));
         updateSummary();
         renderRecords();
-        status.textContent = `Updated ${new Date().toLocaleString()}`;
+        status.textContent = `Local browser records · Updated ${new Date().toLocaleString()}`;
     } catch (error) {
         status.textContent = `Unable to load records: ${error.message}`;
-        showMessage('Could not load records. Check the PHP and database connection.');
+        showMessage('Could not read this browser\'s saved tracker records.');
     }
 }
 
@@ -122,7 +113,9 @@ function renderRecords() {
     const body = document.getElementById('records-body');
     body.replaceChildren();
     if (!filtered.length) {
-        showMessage(allRecords.length ? 'No records match these filters.' : 'No daily records have been saved yet.');
+        showMessage(allRecords.length
+            ? 'No records match these filters.'
+            : 'No local records yet. Use the tracker in this browser first.');
         return;
     }
 
@@ -271,32 +264,21 @@ document.getElementById('refresh-records').addEventListener('click', () => {
     loadRecords();
 });
 document.getElementById('export-records').addEventListener('click', exportCsv);
-document.getElementById('admin-login-form').addEventListener('submit', async event => {
+document.getElementById('admin-login-form').addEventListener('submit', event => {
     event.preventDefault();
     const message = document.getElementById('login-message');
     const password = document.getElementById('admin-password').value;
-    message.textContent = 'Signing in';
-    try {
-        const response = await fetch('../api.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'login', password })
-        });
-        const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.error || 'Sign in failed');
-        document.getElementById('admin-password').value = '';
-        message.textContent = '';
-        await checkAuthentication();
-    } catch (error) {
-        message.textContent = error.message;
+    if (password !== ADMIN_PASSWORD) {
+        message.textContent = 'Incorrect password';
+        return;
     }
+    document.getElementById('admin-password').value = '';
+    message.textContent = '';
+    document.getElementById('admin-login').hidden = true;
+    document.getElementById('admin-app').hidden = false;
+    loadRecords();
 });
-document.getElementById('admin-logout').addEventListener('click', async () => {
-    await fetch('../api.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'logout' })
-    });
+document.getElementById('admin-logout').addEventListener('click', () => {
     allRecords = [];
     document.getElementById('admin-app').hidden = true;
     document.getElementById('admin-login').hidden = false;

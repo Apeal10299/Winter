@@ -459,6 +459,61 @@ input[type="checkbox"]:checked::after {
 .record-objective.done { border-color: var(--status-ready); color: var(--status-ready); }
 .admin-message { padding: 24px; color: var(--text-secondary); text-align: center; }
 
+.admin-security-note {
+    margin-bottom: 14px;
+    color: var(--accent-amber);
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+    .admin-topbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-actions,
+    .admin-stats,
+    .calendar-filter-group {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .calendar-filter-group button {
+        grid-column: 1 / -1;
+    }
+
+    .record-filter-group {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .admin-filters input,
+    .admin-filters select {
+        min-width: 0;
+    }
+
+    .record-objectives {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 420px) {
+    .admin-actions,
+    .calendar-filter-group,
+    .record-objectives {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .admin-stat {
+        padding: 12px;
+    }
+
+    .admin-stat strong {
+        font-size: 1.1rem;
+        overflow-wrap: anywhere;
+    }
+}
+
 @media (max-width: 600px) {
     body {
         padding: 16px;

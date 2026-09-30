@@ -28,7 +28,9 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir _site
+          mkdir -p _site/warc-admin
           cp index.html script.js style.css _site/
+          cp warc-admin/index.html warc-admin/admin.js _site/warc-admin/
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
