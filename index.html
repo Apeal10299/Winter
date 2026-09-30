@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WINTER ARC 9 | CLOUD SYNCED</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="dashboard-container">
+    <header>
+        <h1>WINTER ARC 9</h1>
+        <div class="subtitle" id="date-subtitle">Cloud Sync Active • Loading...</div>
+    </header>
+
+    <section class="status-card">
+        <div class="status-header">
+            <span>Daily Execution Score</span>
+            <span id="readiness-metrics">0 / 9 Completed</span>
+        </div>
+        <div class="tactical-progress-container" id="progress-container">
+            <div class="progress-segment" id="seg-0"></div>
+            <div class="progress-segment" id="seg-1"></div>
+            <div class="progress-segment" id="seg-2"></div>
+            <div class="progress-segment" id="seg-3"></div>
+            <div class="progress-segment" id="seg-4"></div>
+            <div class="progress-segment" id="seg-5"></div>
+            <div class="progress-segment" id="seg-6"></div>
+            <div class="progress-segment" id="seg-7"></div>
+            <div class="progress-segment" id="seg-8"></div>
+        </div>
+    </section>
+
+    <section class="auto-panel">
+        <div class="auto-item">
+            <span class="auto-label">Auto-Logged Sleep</span>
+            <span class="auto-value">9:30 PM - 5:00 AM (7.5 hrs)</span>
+        </div>
+        <div class="auto-item">
+            <span class="auto-label">Money Spent Today</span>
+            <input type="text" id="money-spent" class="money-input" placeholder="e.g. 0rs" oninput="saveDataToBackend()">
+        </div>
+    </section>
+
+    <section class="objectives-list">
+        <div class="objective-item" id="item-0">
+            <div class="objective-info"><span class="item-title">1. 5:00 AM Wakeup</span><span class="item-desc">On-time execution</span></div>
+            <input type="checkbox" id="check-0" onchange="saveDataToBackend()">
+        </div>
+        <div class="objective-item" id="item-1">
+            <div class="objective-info"><span class="item-title">2. Workout</span><span class="item-desc">Minimum 30 mins session</span></div>
+            <input type="checkbox" id="check-1" onchange="saveDataToBackend()">
+        </div>
+        
+        <!-- Deep Work with Timer -->
+        <div class="objective-item" id="item-2">
+            <div class="objective-info">
+                <span class="item-title">3. Deep Work (7:15 - 9:00)</span>
+                <span class="item-desc">Build / DSA (<span id="timer-display" class="timer-display-text">01:45:00</span>)</span>
+            </div>
+            <div class="timer-controls">
+                <button class="timer-btn" id="timer-main-btn" onclick="toggleTimer()">Start</button>
+                <button class="timer-btn stop" onclick="resetTimer()">Reset</button>
+                <input type="checkbox" id="check-2" onchange="saveDataToBackend()">
+            </div>
+        </div>
+
+        <div class="objective-item" id="item-3">
+            <div class="objective-info"><span class="item-title">4. DSA Problems</span><span class="item-desc">Target: 2 / day</span></div>
+            <input type="number" id="num-dsa" class="num-input" min="0" value="0" oninput="saveDataToBackend()">
+        </div>
+        <div class="objective-item" id="item-4">
+            <div class="objective-info"><span class="item-title">5. GitHub Commit</span><span class="item-desc">Push code daily</span></div>
+            <input type="checkbox" id="check-4" onchange="saveDataToBackend()">
+        </div>
+        <div class="objective-item" id="item-5">
+            <div class="objective-info"><span class="item-title">6. Water 3L Tracker</span><span class="item-desc">Hydration quota</span></div>
+            <input type="checkbox" id="check-5" onchange="saveDataToBackend()">
+        </div>
+        <div class="objective-item" id="item-6">
+            <div class="objective-info"><span class="item-title">7. No Scroll</span><span class="item-desc">No Insta/Reels till 9 PM</span></div>
+            <input type="checkbox" id="check-6" onchange="saveDataToBackend()">
+        </div>
+        <div class="objective-item" id="item-7">
+            <div class="objective-info"><span class="item-title">8. Mobile Stop (9:20 PM)</span><span class="item-desc">Phone hard lock down</span></div>
+            <input type="checkbox" id="check-7" onchange="saveDataToBackend()">
+        </div>
+        <div class="objective-item" id="item-8" style="flex-direction: column; align-items: stretch; gap: 8px;">
+            <div class="objective-info"><span class="item-title">9. Win of the Day</span><span class="item-desc">One-line performance log</span></div>
+            <input type="text" id="win-input" class="text-input" placeholder="What did you do good today?" oninput="saveDataToBackend()">
+            <input type="checkbox" id="check-8" style="display:none;">
+        </div>
+    </section>
+
+    <footer>STAY CONSISTENT • CLOUD SYNC ACTIVE</footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
