@@ -468,6 +468,28 @@ input[type="checkbox"]:checked::after {
     background: var(--card-bg);
 }
 .admin-login h2 { margin-bottom: 16px; color: var(--accent-cyan); font-size: 1rem; text-transform: uppercase; }
+.quote-marquee {
+    overflow: hidden;
+    margin: 0 0 18px;
+    padding: 9px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    color: var(--accent-amber);
+    font-size: 0.72rem;
+    white-space: nowrap;
+}
+.quote-marquee span {
+    display: inline-block;
+    min-width: 100%;
+    animation: quote-marquee-scroll 45s linear infinite;
+}
+@keyframes quote-marquee-scroll {
+    from { transform: translateX(100%); }
+    to { transform: translateX(-100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .quote-marquee span { animation: none; }
+}
 .admin-login form { display: flex; flex-direction: column; gap: 10px; }
 .admin-login label { color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; }
 .admin-login input {

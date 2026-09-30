@@ -1,5 +1,6 @@
 const _0x6e2281=_0x5040;(function(_0xd11a70,_0x88a26e){const _0x1169af=_0x5040,_0x1cbf7e=_0xd11a70();while(!![]){try{const _0x14413f=-parseInt(_0x1169af(0x139))/0x1*(parseInt(_0x1169af(0x144))/0x2)+-parseInt(_0x1169af(0x13a))/0x3+-parseInt(_0x1169af(0x13b))/0x4*(-parseInt(_0x1169af(0x13f))/0x5)+parseInt(_0x1169af(0x142))/0x6+-parseInt(_0x1169af(0x140))/0x7*(parseInt(_0x1169af(0x13e))/0x8)+-parseInt(_0x1169af(0x143))/0x9*(-parseInt(_0x1169af(0x141))/0xa)+parseInt(_0x1169af(0x13d))/0xb*(parseInt(_0x1169af(0x13c))/0xc);if(_0x14413f===_0x88a26e)break;else _0x1cbf7e['push'](_0x1cbf7e['shift']());}catch(_0x348db8){_0x1cbf7e['push'](_0x1cbf7e['shift']());}}}(_0x4d08,0xb8efd));function _0x5040(_0x5b1a27,_0x4d47ac){const _0x4d08f7=_0x4d08();return _0x5040=function(_0x504064,_0x4573cb){_0x504064=_0x504064-0x138;let _0x4f3ccb=_0x4d08f7[_0x504064];return _0x4f3ccb;},_0x5040(_0x5b1a27,_0x4d47ac);}const ADMIN_PASSWORD=_0x6e2281(0x138);function _0x4d08(){const _0x161ab6=['119eDGtKC','30drkGUb','8163876eFuUhK','4053636NoDJnR','214vVcymE','winterarc2026','11742pViZZa','245448rggFXg','32036EkKIBI','9804HiwgAh','5709Rwkngt','666632IjPeYY','235qWoDoh'];_0x4d08=function(){return _0x161ab6;};return _0x4d08();}
 const STORAGE_PREFIX = 'winter-arc-progress-';
+const ADMIN_AUTH_KEY = 'winter-arc-admin-authenticated';
 const MIN_WIN_WORDS = 20;
 const BUDGET_CATEGORIES = ['Food', 'Study', 'Transport', 'Fun', 'Other'];
 const BUDGET_COLORS = ['#00e676', '#00c8ff', '#ffbf00', '#ff4757', '#a0a0b0'];
@@ -24,8 +25,10 @@ function countWords(text) {
 function checkAuthentication() {
     const loginPanel = document.getElementById('admin-login');
     const adminApp = document.getElementById('admin-app');
-    loginPanel.hidden = false;
-    adminApp.hidden = true;
+    const isAuthenticated = sessionStorage.getItem(ADMIN_AUTH_KEY) === 'true';
+    loginPanel.hidden = isAuthenticated;
+    adminApp.hidden = !isAuthenticated;
+    if (isAuthenticated) loadRecords();
 }
 
 function loadRecords() {
@@ -382,12 +385,14 @@ document.getElementById('admin-login-form').addEventListener('submit', event => 
     }
     document.getElementById('admin-password').value = '';
     message.textContent = '';
+    sessionStorage.setItem(ADMIN_AUTH_KEY, 'true');
     document.getElementById('admin-login').hidden = true;
     document.getElementById('admin-app').hidden = false;
     loadRecords();
 });
 document.getElementById('admin-logout').addEventListener('click', () => {
     allRecords = [];
+    sessionStorage.removeItem(ADMIN_AUTH_KEY);
     document.getElementById('admin-app').hidden = true;
     document.getElementById('admin-login').hidden = false;
     document.getElementById('login-message').textContent = '';
